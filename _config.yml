@@ -56,9 +56,13 @@ collections:
   mysql:
     output: true
     permalink: /:collection/:path/
+  os:
+    output: true
+    permalink: /:collection/:path/
 
 ordered_collections:
   - posts
+  - os
   - kotlin
   - mysql
 

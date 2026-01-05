@@ -28,7 +28,7 @@ MySQL 8.0부터 계정은 `SYSTEM_USER` 권한을 가지고 있느냐에 따라 
 
 - `mysql.sys@localhost` : MySQL 8.0부터 기본으로 내장된 sys 스키마의 객체(뷰나, 함수, 그리고 프로시저)들의 DEFINER로 사용되는 계정
 - `mysql.session@localhost` : MySQL 플러그인이 서버로 접근할 때 사용되는 계정
-- `mysql.infoschema@localhost` : information_schema에 정의된 뷰의 DEFINER로 사용되는 계정
+- `mysql.infoschema@localhost` : `information_schema`에 정의된 뷰의 DEFINER로 사용되는 계정
 
 ```sql
 SELECT user, host, account_locked FROM mysql.user WHERE user LKE 'mysql.%';
