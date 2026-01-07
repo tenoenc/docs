@@ -59,10 +59,14 @@ collections:
   os:
     output: true
     permalink: /:collection/:path/
+  java:
+    output: true
+    permalink: /:collection/:path/
 
 ordered_collections:
   - posts
   - os
+  - java
   - kotlin
   - mysql
 
