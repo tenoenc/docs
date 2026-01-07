@@ -44,7 +44,7 @@ VMM 또는 하이퍼바이저는 가상화를 가능하게 하는 핵심 소프�
 echo "=== [System Virtualization Check] ==="
 
 # 1. lscpu를 통한 가상화 벤더 확인
-# 물리 서버라면 'Hypervisor vendor' 항목이 나타나지 않거나 비어 있습니다.
+# 물리 서버라면 'Hypervisor vendor' 항목이 나타나지 않거나 비어 있다.
 VENDER_INFO=$(lscpu | grep "Hypervisor vendor")
 
 if [ -z "$VENDER_INFO" ]; then
@@ -57,7 +57,7 @@ fi
 echo -e "\n=== [DMI (Desktop Management Interface) Info] ==="
 
 # 2. dmidecode를 통한 시스템 제조사 확인 (root 권한 필요)
-# 가상 머신일 경우 VMware, Inc. 또는 VirtualBox 등이 출력됩니다.
+# 가상 머신일 경우 VMware, Inc. 또는 VirtualBox 등이 출력된다.
 sudo dmidecode -s system-manufacturer 2>/dev/null || echo "Unable to read DMI info (Check root permission)"
 
 # 3. 추가 힌트: 시스템 모델명 확인

@@ -84,5 +84,5 @@ public class InfrastructureStack extends Stack {
 
 > **백엔드 관점: 서버리스와 클라우드 네이티브**
 >
-> 과거에는 직접 물리 서버(On-premise)에 OS를 설치했지만, 이제는 AWS 같은 클라우드 벤더가 제공하는 **IaaS** 위에서 개발합니다. 더 나아가 OS 관리조차 필요 없는 **Serverless (AWS Lambda)** 환경으로 넘어가고 있습니다. 하지만 이 모든 편리함의 기저에는 OS의 가상화 기술과 분산 시스템 이론이 깔려 있음을 기억해야 한다.
+> 과거에는 직접 물리 서버(On-premise)에 OS를 설치했지만, 이제는 AWS 같은 클라우드 벤더가 제공하는 **IaaS** 위에서 개발한다. 더 나아가 OS 관리조차 필요 없는 **Serverless (AWS Lambda)** 환경으로 넘어가고 있다. 하지만 이 모든 편리함의 기저에는 OS의 가상화 기술과 분산 시스템 이론이 깔려 있음을 기억해야 한다.
 {: .block-tip }

@@ -7,4 +7,4 @@
 * **Many-to-Many:** Go 루틴 등 경량 스레드 모델
 
 
-* **> 백엔드 관점:** **Java 21의 가상 스레드(Virtual Threads, Project Loom)**가 왜 등장했는지, 기존 One-to-One 모델의 한계(OS 스레드 생성 비용, 컨텍스트 스위칭 비용)와 비교하여 깊게 파고들어야 할 핵심 포인트입니다.
+* **> 백엔드 관점:** **Java 21의 가상 스레드(Virtual Threads, Project Loom)**가 왜 등장했는지, 기존 One-to-One 모델의 한계(OS 스레드 생성 비용, 컨텍스트 스위칭 비용)와 비교하여 깊게 파고들어야 할 핵심 포인트이다.

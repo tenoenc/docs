@@ -53,7 +53,7 @@ fun main() {
 
 한 분기 안에서 여러 값을 매치 패턴으로 사용할 수도 있다. 그럴 경우 값 사이를 콤파(`,`)로 분리한다.
 
-```koltin
+```kotlin
 fun getWarmth(color: Color) = when(color) {
     Color.RED, Color.ORANGE, Color.YELLOW -> "warm"
     Color.GREEN -> "neutral"
@@ -100,7 +100,7 @@ fun main() {
 
 앞의 코드에서는 `when`의 분기 조건에 있는 객체의 동등성을 비교하기 위해 인스턴스를 생성한다. 보통의 경우에는 문제 없지만, 만약 해당 함수가 자주 호출된다면 불필요한 가비지 객체가 늘어나게 된다. 인자 없는 `when`을 사용하면 불필요한 객체 생성을 막을 수 있다. 코드의 가독성은 떨어지지만 성능을 더 향상시키기 위해 감수해야 하는 경우도 있다.
 
-```kotiln
+```kotlin
 fun mixOptimized(c1: Color, c2: Color) =
     when {
         (c1 == RED && c2 == YELLOW) ||

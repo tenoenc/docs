@@ -29,75 +29,99 @@
 
 정책과 메커니즘이 분리되어 있다면, 메커니즘(커널 코드)을 다시 작성하지 않고도 정책(파라미터 설정이나 모듈 교체)만 변경하여 시스템을 튜닝할 수 있다. 반대로 두 가지가 결합되어 있다면 정책을 바꿀 때마다 커널 전체를 다시 컴파일해야 하는 비효율이 발생한다.
 
-#### [Practice] Dynamic Loading (Java) vs Static Linking (C)
+> **백엔드 관점: 좋은 아키텍처의 황금률**
+>
+> 이 챕터는 백엔드 개발자가 **객체지향 설계(OOD)**를 할 때 가장 중요한 원칙과 맞닿아 있다.
+>
+> 1. **전략 패턴 (Strategy Pattern):** 변하지 않는 전체 흐름(Context/Mechanism)에서 알고리즘(Strategy/Policy)만 인터페이스로 분리하여 갈아 끼우는 패턴이다.
+> 2. **의존성 주입 (DI):** Spring Framework에서 `@Service` 로직(Policy)은 `@Repository` 구현체(Mechanism)가 무엇이든(JPA든 JDBC든) 상관없이 동작해야 한다.
+{: .block-tip }
 
-C언어(Static Linking)는 `printf` 같은 라이브러리 코드를 실행 파일 안에 꽉 채워 넣습니다. 반면, Java는 프로그램이 실행되는 도중(Runtime)에 필요한 클래스 파일을 찾아서 메모리에 올리는 **동적 로딩(Dynamic Loading)** 방식을 사용합니다.
+#### [Practice] 전략 패턴을 통한 정책과 메커니즘의 분리 구현
+
+운영체제가 커널 수정 없이 스케줄링 알고리즘을 바꿀 수 있는 이유는 설계 단계에서 정책과 메커니즘을 분리했기 때문이다. 이를 Java의 **전략 패턴(Strategy Pattern)**으로 구현하여, "실행(Mechanism)"은 유지한 채 "규칙(Policy)"만 동적으로 교체하는 유연함을 확인해보자.
 
 ##### 1. 검증 코드 (Java)
 
-`Class.forName()`을 사용하여, 컴파일 시점에는 존재조차 몰랐던 클래스(문자열로 이름 전달)를 런타임에 로딩하고 인스턴스화하는 과정을 확인합니다.
+작업을 실행하는 환경(`TaskExecutor`)은 **메커니즘**에 해당하며, 작업의 순서를 결정하는 `SchedulingPolicy`는 **정책**에 해당한다. 
 
 ```java
-import java.lang.reflect.Constructor;
+import java.util.*;
 
-public class DynamicLoadingTest {
-    public static void main(String[] args) {
-        System.out.println("=== 1. App Started (Plugin not loaded yet) ===");
-        
-        // 시나리오: 설정 파일이나 사용자 입력에서 클래스 이름을 문자열로 받음
-        // 컴파일 타임에는 이 클래스의 존재를 모름 (import 안 함)
-        String className = "DynamicPlugin"; 
+// 1. Policy Interface (무엇을 할 것인가?)
+interface SchedulingPolicy {
+    void sort(List<Task> tasks);
+}
 
-        try {
-            // 이 시점에 JVM은 파일시스템에서 'DynamicPlugin.class'를 찾아 메모리에 적재(Load)함
-            System.out.println(">>> Loading class: " + className);
-            Class<?> clazz = Class.forName(className);
+// 2. Concrete Policies (다양한 정책들)
+class FifoPolicy implements SchedulingPolicy {
+    public void sort(List<Task> tasks) { /* 그대로 둠 */ }
+}
 
-            // 인스턴스 생성 (Reflection)
-            Constructor<?> constructor = clazz.getDeclaredConstructor();
-            Object plugin = constructor.newInstance();
+class PriorityPolicy implements SchedulingPolicy {
+    public void sort(List<Task> tasks) {
+        tasks.sort(Comparator.comparingInt(t -> t.priority));
+    }
+}
 
-            System.out.println("=== 2. Class Loaded & Instantiated ===");
-            System.out.println("Instance: " + plugin.toString());
+// 3. Mechanism (어떻게 실행할 것인가? - 변하지 않는 부분)
+class TaskExecutor {
+    private SchedulingPolicy policy;
 
-        } catch (ClassNotFoundException e) {
-            System.err.println("Class not found! (Check classpath)");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void setPolicy(SchedulingPolicy policy) {
+        this.policy = policy;
     }
 
-    // 테스트를 위해 내부에 static 클래스로 정의 (실제로는 별도 파일로 존재할 수 있음)
-    // 컴파일 시점에는 main 메서드가 이 클래스를 직접 참조하지 않음!
-    public static class DynamicPlugin {
-        public DynamicPlugin() {
-            System.out.println("   [System] DynamicPlugin Constructor Called!");
+    public void runTasks(List<Task> tasks) {
+        System.out.println("\n[System] Applying Policy: " + policy.getClass().getSimpleName());
+        policy.sort(tasks); // 정책에 따라 순서 결정
+        
+        for (Task t : tasks) {
+            System.out.println("Executing: " + t.name);
         }
+    }
+}
 
-        @Override
-        public String toString() {
-            return "I am a dynamically loaded plugin!";
-        }
+class Task {
+    String name;
+    int priority;
+    Task(String name, int priority) { this.name = name; this.priority = priority; }
+}
+
+public class PolicyMechanismLab {
+    public static void main(String[] args) {
+        List<Task> tasks = new ArrayList<>(Arrays.asList(
+            new Task("Low-Priority-Task", 10),
+            new Task("High-Priority-Task", 1)
+        ));
+
+        TaskExecutor executor = new TaskExecutor();
+
+        // 정책 1 적용 (FIFO)
+        executor.setPolicy(new FifoPolicy());
+        executor.runTasks(tasks);
+
+        // 정책 2 적용 (Priority) - 메커니즘 코드는 수정 없이 정책만 교체
+        executor.setPolicy(new PriorityPolicy());
+        executor.runTasks(tasks);
     }
 }
 ```
 
 ##### 2. 실행 결과 및 해석
 
--   **지연 로딩 (Lazy Loading):** `Class.forName()`이 호출되기 전까지 `HeavyPlugin` 클래스는 메모리에 존재하지 않습니다. 즉, **사용하지 않는 코드는 메모리를 점유하지 않는다**는 OS의 효율적 메모리 관리 원칙을 따릅니다.
--   **유연성:** 코드를 수정하고 재컴파일하지 않아도, 설정 파일(String)만 바꾸면 실행되는 객체를 교체할 수 있습니다. (예: JDBC Driver 로딩).
+코드를 실행하여 정책 교체에 따른 시스템 동작 변화를 확인한다.
 
-> **백엔드 관점: Spring Bean과 동적 로딩**
->
-> 우리가 사용하는 **Spring Framework**의 근간이 바로 이 기술입니다. `@Component`가 붙은 클래스들을 스캔해서 동적으로 메모리에 올리고, 의존성 주입(DI)을 해줍니다. 만약 Java가 C언어처럼 정적 링킹만 지원했다면, 빈 하나를 추가할 때마다 서버 전체를 다시 빌드하고 링킹하는 고통을 겪었을 것입니다.
-{: .block-tip }
+```text
+[System] Applying Policy: FifoPolicy
+Executing: Low-Priority-Task
+Executing: High-Priority-Task
 
-> **백엔드 관점: 좋은 아키텍처의 황금률**
->
-> 이 챕터는 백엔드 개발자가 **객체지향 설계(OOD)**를 할 때 가장 중요한 원칙과 맞닿아 있습니다.
->
-> 1. **전략 패턴 (Strategy Pattern):** 변하지 않는 전체 흐름(Context/Mechanism)에서 알고리즘(Strategy/Policy)만 인터페이스로 분리하여 갈아 끼우는 패턴입니다.
-> 2. **의존성 주입 (DI):** Spring Framework에서 `@Service` 로직(Policy)은 `@Repository` 구현체(Mechanism)가 무엇이든(JPA든 JDBC든) 상관없이 동작해야 합니다.
->
-> **실무 적용:** "할인을 적용한다"는 기능(메커니즘)은 그대로 두고, "VIP는 10%, 신규 유저는 5%"라는 정책만 변경했을 때 코드를 얼마나 적게 수정해도 되는지가 좋은 설계의 척도입니다. OS 설계자가 고민했던 유연함의 미학을 우리 코드에도 적용해 보세요.
-{: .block-tip }
+[System] Applying Policy: PriorityPolicy
+Executing: High-Priority-Task
+Executing: Low-Priority-Task
+```
+
+1.  **메커니즘의 고정:** `TaskExecutor` 클래스의 `runTasks()` 메서드(작업을 꺼내어 실행하는 로직)는 단 한 줄도 수정되지 않는다.
+2.  **정책의 유연성:** `FifoPolicy`를 `PriorityPolicy`로 갈아 끼우는 것만으로 시스템 전체의 작업 처리 순서가 바뀐다.
+3.  **결론:** OS가 인터럽트와 문맥 교환이라는 강력한 **메커니즘**을 갖춰놓고, 그 위에 다양한 스케줄링 **정책**을 얹는 것과 동일한 원리이다. 이 분리 덕분에 시스템은 요구사항 변화에 압도적으로 유연하게 대처할 수 있다.

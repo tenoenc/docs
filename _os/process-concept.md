@@ -23,7 +23,7 @@
 
 > **백엔드 관점: 서버 부하의 정체**
 >
-> 리눅스 서버에서 `top` 명령어를 쳤을 때 보이는 **Load Average**는 단순히 CPU 사용률이 아닙니다. 이는 **'Running 상태이거나 Ready 상태에 있는 프로세스의 수'** + **'I/O를 기다리는(Waiting) 프로세스의 수'**를 의미합니다.
+> 리눅스 서버에서 `top` 명령어를 쳤을 때 보이는 **Load Average**는 단순히 CPU 사용률이 아니다. 이는 **'Running 상태이거나 Ready 상태에 있는 프로세스의 수'** + **'I/O를 기다리는(Waiting) 프로세스의 수'**를 의미한다.
 > - CPU가 바빠서 줄 서 있는 프로세스가 많다면? -> **CPU Bound** (스케일 업/아웃 필요)
 > - Disk I/O를 기다리느라 멈춰있는 프로세스가 많다면? -> **I/O Bound** (DB 쿼리 튜닝, 캐시 도입 필요)
 {: .block-tip }
@@ -69,13 +69,26 @@
     - 함수가 호출되면 할당되고 리턴되면 자동으로 해제된다.
     - 메모리의 높은 주소에서 낮은 주소 방향으로 커진다 (아래로 자란다).
 
+> **백엔드 관점: JVM 메모리 구조와의 매핑**
+>
+> 백엔드 개발자에게 가장 익숙한 **JVM의 Runtime Data Area**는 OS 프로세스 메모리 구조를 소프트웨어적으로 흉내 낸 것이다.
+>
+> - **OS Text** ≒ **JVM Method Area**: 클래스 정보와 바이트코드가 저장됨.
+> - **OS Heap** ≒ **JVM Heap**: `new`로 생성된 객체(Object)가 저장되며, GC(Garbage Collection)의 대상이 됨.
+> - **OS Stack** ≒ **JVM Stack**: 각 스레드마다 존재하며, 메소드 호출 시 프레임(Frame)이 쌓임.
+>     - 무한 루프나 깊은 재귀 호출 시 발생하는 `StackOverflowError`는 이 영역이 꽉 찼다는 뜻이다.
+>     - 객체를 너무 많이 생성하면 발생하는 `OutOfMemoryError`는 Heap 영역이 꽉 찼다는 뜻이다.
+>
+> **주의:** JVM 자체도 하나의 OS 프로세스이므로, OS 입장에서 보면 JVM이 쓰는 모든 메모리(Heap + Stack + Method Area)는 통째로 OS 프로세스의 **Heap** 영역(혹은 Data) 어딘가에 위치할 것이다.
+{: .block-tip }
+
 #### [Practice] 프로세스 메모리 구조의 실체: 주소 공간 탐계
 
-우리는 이론적으로 프로세스의 메모리가 Code, Data, Heap, Stack으로 나뉜다고 배웁니다. 하지만 이것이 실제로 어떤 주소 번지에 놓여 있는지, 그리고 "Stack은 아래로, Heap은 위로 자란다"는 말이 무엇인지 직접 눈으로 확인해 보겠습니다.
+우리는 이론적으로 프로세스의 메모리가 Code, Data, Heap, Stack으로 나뉜다고 배운다. 하지만 이것이 실제로 어떤 주소 번지에 놓여 있는지, 그리고 "Stack은 아래로, Heap은 위로 자란다"는 말이 무엇인지 직접 눈으로 확인해보자.
 
 ##### 1. 검증 코드 (C Language)
 
-C언어에서 각 영역에 속하는 변수들의 메모리 주소(&)를 직접 출력하여 상대적인 위치를 비교합니다.
+C언어에서 각 영역에 속하는 변수들의 메모리 주소(&)를 직접 출력하여 상대적인 위치를 비교한다.
 
 ```c
 #include <stdio.h>
@@ -123,38 +136,21 @@ int main() {
 
 ```text
 === Process Memory Layout ===
-[Code ]  Function Addr : 0x55ef4836f1a9
-[Data ]  Global Var Addr: 0x55ef48372010
-[Heap ]  Heap Var 1 Addr: 0x55ef49a9a2a0
-[Heap ]  Heap Var 2 Addr: 0x55ef49a9a2c0 (Upward growth: 주소 증가)
-[Stack]  Stack Var 1 Addr: 0x7ffd5e68846c
-[Stack]  Stack Var 2 Addr: 0x7ffd5e688468 (Downward growth: 주소 감소)
+[Code ]  Function Addr : 0000000000401550
+[Data ]  Global Var Addr: 0000000000403010
+[Heap ]  Heap Var 1 Addr: 0000000000712470
+[Heap ]  Heap Var 2 Addr: 0000000000712490 (Upward growth)
+[Stack]  Stack Var 1 Addr: 000000000061FE0C
+[Stack]  Stack Var 2 Addr: 000000000061FE08 (Downward growth)
 ```
 
--   **주소값의 높낮이:** 일반적으로 주소값은 `Code < Data < Heap <<<<< Stack` 순으로 커집니다. (Stack은 매우 높은 주소 번지에 할당됩니다.)
--   **성장 방향 (Heap):** 두 번의 `malloc` 주소를 비교하면, 나중에 할당된 주소가 더 **큽니다**. 즉, 낮은 주소에서 높은 주소로 **위로 자랍니다**.
--   **성장 방향 (Stack):** 함수가 재귀적으로 호출될 때 지역 변수의 주소를 비교하면, 나중에 할당된 주소가 더 **작습니다**. 즉, 높은 주소에서 낮은 주소로 **아래로 자랍니다**.
-
-
+- **주소값의 배치 (Logical vs. Actual):**
+  - 전통적인 논리 메모리 모델에서는 `Code < Data < Heap <<<<< Stack` 순으로 주소가 높아진다고 설명한다.
+  - 하지만 실제 현대 운영체제(Windows 등)에서는 **ASLR(Address Space Layout Randomization)** 기술과 OS의 메모리 할당 정책에 따라 Stack이 Heap보다 낮은 주소 번지에 할당되기도 한다. 따라서 주소의 절대적인 수치보다는 영역 간의 상대적인 위치와 성장 방향에 주목하는 것이 타당하다.
+- **성장 방향 (Heap):** 연속적인 `malloc` 호출을 통해 할당된 주소를 비교하면, 나중에 할당된 주소가 더 큰 값을 가진다. 이는 Heap이 낮은 주소에서 높은 주소 방향으로 **상향 성장(Upward growth)**함을 의미한다.
+- **성장 방향 (Stack):** 지역 변수가 선언된 순서나 함수 호출에 따른 주소 변화를 비교하면, 나중에 할당된 변수의 주소가 더 작다. 이는 Stack이 높은 주소에서 낮은 주소 방향으로 **하향 성장(Downward growth)**함을 의미한다.
 
 > **백엔드 관점: 메모리 오버플로우의 본질**
 >
-> **Stack Overflow**가 왜 발생할까요? 무한 재귀 호출로 인해 Stack 영역이 아래로 계속 자라다가 결국 Heap 영역이나 다른 데이터 영역을 침범하려고 할 때 OS가 이를 차단하며 발생하는 에러입니다. 반대로 **Heap Overflow**는 동적 할당을 너무 많이 해서 Heap이 위로 자라다가 메모리 한계를 넘어서는 현상입니다. 우리가 짜는 코드 한 줄이 이 거대한 메모리 지도 위의 한 점을 찍고 있다는 사실을 기억하세요.
-{: .block-tip }
-
-> **스택과 힙의 충돌:**
-> 힙은 위로 자라고 스택은 아래로 자란다. 두 영역 사이에는 빈 공간(Hole)이 존재하지만, 재귀 호출이 너무 깊어지거나 동적 할당을 너무 많이 하면 두 영역이 만나게 되어 메모리 부족 오류가 발생한다.
-{: .block-warning }
-
-> **백엔드 관점: JVM 메모리 구조와의 매핑**
->
-> 백엔드 개발자에게 가장 익숙한 **JVM의 Runtime Data Area**는 OS 프로세스 메모리 구조를 소프트웨어적으로 흉내 낸 것입니다.
->
-> - **OS Text** ≒ **JVM Method Area**: 클래스 정보와 바이트코드가 저장됨.
-> - **OS Heap** ≒ **JVM Heap**: `new`로 생성된 객체(Object)가 저장되며, GC(Garbage Collection)의 대상이 됨.
-> - **OS Stack** ≒ **JVM Stack**: 각 스레드마다 존재하며, 메소드 호출 시 프레임(Frame)이 쌓임.
->     - 무한 루프나 깊은 재귀 호출 시 발생하는 `StackOverflowError`는 이 영역이 꽉 찼다는 뜻입니다.
->     - 객체를 너무 많이 생성하면 발생하는 `OutOfMemoryError`는 Heap 영역이 꽉 찼다는 뜻입니다.
->
-> **주의:** JVM 자체도 하나의 OS 프로세스이므로, OS 입장에서 보면 JVM이 쓰는 모든 메모리(Heap + Stack + Method Area)는 통째로 OS 프로세스의 **Heap** 영역(혹은 Data) 어딘가에 위치할 것입니다.
+> **Stack Overflow**가 왜 발생할까? 무한 재귀 호출로 인해 Stack 영역이 아래로 계속 자라다가 결국 Heap 영역이나 다른 데이터 영역을 침범하려고 할 때 OS가 이를 차단하며 발생하는 에러이다. 반대로 **Heap Overflow**는 동적 할당을 너무 많이 해서 Heap이 위로 자라다가 메모리 한계를 넘어서는 현상이다. 우리가 짜는 코드 한 줄이 이 거대한 메모리 지도 위의 한 점을 찍고 있다는 사실을 기억하자.
 {: .block-tip }
