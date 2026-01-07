@@ -19,7 +19,7 @@ IPC에는 근본적으로 다른 두 가지 모델이 존재한다.
 
 공유 메모리 방식의 가장 큰 특징은 **"커널의 개입을 최소화"**한다는 점이다. 초기 설정(`setup`) 단계에서만 시스템 콜을 사용하고, 이후 데이터 접근은 일반 메모리 변수를 다루듯 **포인터 연산**만으로 수행된다.
 
-##### 1. 검증 코드 (C Language)
+##### 검증 코드 (C Language)
 
 C언어의 `mmap()` 함수를 사용하여 파일을 프로세스의 메모리 주소 공간에 직접 매핑한다. 이후 `write()` 시스템 콜 없이 오직 `memcpy()`(메모리 복사)만으로 데이터를 저장하는 과정을 확인한다.
 
@@ -59,7 +59,7 @@ int main() {
 }
 ```
 
-##### 2. 실행 결과 및 해석
+##### 실행 결과 및 해석
 
 ```text
 Memory Mapped at address: 0x7d54ce3c1000
@@ -84,7 +84,7 @@ Data written to memory: Hello, Shared Memory! (Direct Access via Pointer)
 
 반면, 파이프(Pipe)나 소켓(Socket)을 이용한 메시지 전달 방식은 데이터를 주고받을 때마다 **운영체제 커널이 중재자**로서 개입해야 한다.
 
-##### 1. 검증 코드 (C Language)
+##### 검증 코드 (C Language)
 
 `pipe()` 시스템 콜로 커널 버퍼를 생성하고, `fork()`로 생성된 자식 프로세스가 `write()` 시스템 콜을 통해 부모에게 데이터를 보낸다.
 
@@ -127,7 +127,7 @@ int main() {
 }
 ```
 
-##### 2. 실행 결과 및 해석
+##### 실행 결과 및 해석
 
 ```text
 Parent received: Hello from Child via Pipe!

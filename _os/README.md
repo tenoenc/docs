@@ -55,18 +55,19 @@ nav_order: 1
 ## 스레드와 병행성
 
 <!-- ### 스레드 개념 -->
-<!-- {% include_relative thread-concept.md %} -->
+{% include_relative thread-concept.md %}
 
 <!-- ### 멀티코어 프로그래밍 -->
-<!-- {% include_relative multicore-programming.md %} -->
+{% include_relative multicore-programming.md %}
 
 <!-- ### 멀티스레딩 모델 -->
-<!-- {% include_relative multithreading-models.md %} -->
+{% include_relative multithreading-models.md %}
 
 ## CPU 스케줄링
 
 <!-- ### 기본 개념 -->
-<!-- {% include_relative scheduling-basic-concepts.md %} -->
+{% include_relative scheduling-basic-concepts.md %}
 
 <!-- ### 스케줄링 알고리즘 -->
-<!-- {% include_relative scheduling-algorithms.md %} -->
+{% include_relative scheduling-algorithms.md %}
+

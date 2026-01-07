@@ -29,7 +29,7 @@
 
 Docker 컨테이너를 실행하면 마치 독립된 서버(VM)처럼 느껴지지만, 사실 운영체제 입장에서는 단순한 **'격리된 프로세스 군집'**일 뿐이다. 이를 증명하기 위해 일반 리눅스 환경과 Docker 컨테이너 내부의 프로세스 상태(PID 1)를 비교해 본다.
 
-##### 1. 검증 시나리오 (Shell Script)
+##### 검증 시나리오 (Shell Script)
 
 일반적인 Linux OS에서는 시스템 전체를 관리하는 `systemd`가 PID 1번을 차지한다. 반면, Docker 컨테이너 내부에서는 우리가 실행한 애플리케이션 자체가 PID 1번을 부여받는다.
 
@@ -47,7 +47,7 @@ docker run --rm alpine ps -ef | grep -v "ps -ef"
 # docker run --rm openjdk:17-slim ps -ef
 ```
 
-##### 2. 실행 결과 및 해석
+##### 실행 결과 및 해석
 
 ```text
 === [Host OS] PID 1 Information ===

@@ -31,7 +31,7 @@ Java 프로그램이 디스크의 파일을 읽을 때의 흐름은 다음과 �
 
 우리는 Java 코드를 짤 때 `File.read()`나 `println()`이 당연하게 작동한다고 생각한다. 하지만 JVM 밑바닥에서는 운영체제 커널에게 자원을 요청하는 치열한 **시스템 콜(System Call)**이 발생하고 있다. 리눅스의 `strace` 도구를 사용해 이 추상화의 실체를 확인해 본다.
 
-##### 1. 검증 시나리오 (Shell Script)
+##### 검증 시나리오 (Shell Script)
 
 간단한 문자열을 출력하는 Java 프로그램과 파일을 읽는 `cat` 명령어를 대상으로, 실행 시점에 발생하는 시스템 콜(`openat`, `read`, `write` 등)을 필터링하여 추적한다.
 
@@ -56,7 +56,7 @@ echo -e "\n=== Tracing cat command (openat, read, write) ==="
 strace -e openat,read,write cat test.txt
 ```
 
-##### 2. 실행 결과 및 해석
+##### 실행 결과 및 해석
 
 ```text
 === Tracing Java System Calls (write) ===
