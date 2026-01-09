@@ -4,14 +4,62 @@ layout: post
 nav_order: 1
 ---
 
-<!-- ## MySQL이란? -->
-{% include_relative what-is-mysql.md %}
+<!-- ## MySQL 엔진 -->
+{% include_relative mysql-engine.md %}
 
-<!-- ## 설치와 과정 -->
-{% include_relative installation-procedure.md %}
+<!-- ## InnoDB 스토리지 엔진 -->
+{% include_relative innodb-storage-engine.md %}
 
-<!-- ## 사용자 및 권한 -->
-{% include_relative user-permission.md %}
+<!-- ## 트랜잭션과 잠금 -->
+{% include_relative transaction-lock.md %}
 
-<!-- ## 아키텍처 -->
-{% include_relative architecture.md %}
+<!-- ## B-Tree 인덱스 -->
+{% include_relative btree-index.md %}
+
+<!-- ## 데이터 타입
+
+### 정수 및 실수
+### 문자열 및 바이너리
+### 날짜와 시간
+### 문자셋과 콜레이션
+
+---
+
+## 실행 계획
+
+### 실행 계획 산출 메커니즘
+### 통계 정보 및 히스토그램
+### 코스트 모델
+### 실행 계획 분석 방법론
+
+---
+
+## 쿼리 최적화
+
+### 풀 테이블 스캔 전략
+### 풀 인덱스 스캔 전략
+### 루스 인덱스 스캔
+### 인덱스 스킵 스캔
+### 정렬 및 그룹화 최적화
+### 데이터 가공 및 인덱스 가용성
+
+---
+
+## 조인 및 서브쿼리
+
+### 네스티드 루프 조인
+### 블록 네스티드 루프 조인
+### 해시 조인
+### 세미 조인 및 안티 조인 최적화
+### 파생 테이블 및 뷰 머징
+
+---
+
+## 복제 및 파티셔닝
+
+### 바이너리 로그 구조
+### 소스 및 레플리카 아키텍처
+### 반동기 복제
+### 범위 및 리스트 파티션
+### 해시 및 키 파티션
+### 파티션 프루닝 -->
