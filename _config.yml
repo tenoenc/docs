@@ -62,10 +62,14 @@ collections:
   java:
     output: true
     permalink: /:collection/:path/
+  network:
+    output: true
+    permalink: /:collection/:path/
 
 ordered_collections:
   - posts
   - os
+  - network
   - java
   - kotlin
   - mysql
