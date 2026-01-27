@@ -68,11 +68,15 @@ collections:
   docker:
     output: true
     permalink: /:collection/:path/
+  datastructure:
+    output: true
+    permalink: /:collection/:path/
 
 ordered_collections:
   - posts
   - os
   - network
+  - datastructure
   - java
   - kotlin
   - mysql
