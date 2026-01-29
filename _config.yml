@@ -71,12 +71,16 @@ collections:
   datastructure:
     output: true
     permalink: /:collection/:path/
+  algorithm:
+    output: true
+    permalink: /:collection/:path
 
 ordered_collections:
   - posts
   - os
   - network
   - datastructure
+  - algorithm
   - java
   - kotlin
   - mysql
